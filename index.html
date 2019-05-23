@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Generatore di fiume</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <h1 style="text-align: center">Generatore di fiumi</h1>
+    <div id="root">
+        <div id="map"></div>
+        <div class="panel-control">
+            <button class="btn">Genera montagna</button>
+        </div>
+    </div>
+    <script src="./index.js"></script>
+    <script>
+
+         //dichiaro una variabile globale
+        var globalVariable; 
+
+        // Eseguo questa funzione quando finisce il caricamento della pagina
+        //Avrà il compito di creare 2 variabili mappa -> <div id="map"></div>
+                                        //e     bottoneGeneratore -> <button class="btn">Genera montagna</button>
+        //Queste variabili verranno poi passati alla funzione che creerà la matrice
+        //in quanto dovremmo aggiungere l'attributo onclick al bottoneGeneratore
+        //il quale al click genererè la mappa attraverso il contenuto della variabile mappa                                
+        window.onload = function () {
+            
+            //All'interno della funzione dichiaro una variabile mappa
+            let mappa = document.getElementById('map'); // assegno alla variabile mappa l'elemento-tag   <div id="map"></div>
+
+            //Dichiaro una variabile bottoneGeneratore sempre all'interno della funzione
+            let bottoneGeneratore = document.getElementsByClassName('btn')[0]; // assegno alla variabile 
+                                                                               //<button class="btn">Genera montagna</button>
+            
+            //assegno alla variabile globale il costruttore => cioè una specie di filtro 
+            //per creare un nuovo oggetto che avrà 2 proprietà con valore di mappa e bottoneGeneratore
+            globalVariable = new Montagna(mappa, bottoneGeneratore);
+            
+            //Richiamo della funzione init()
+            globalVariable.init();
+        };
+
+    </script>
+</body>
+</html>
