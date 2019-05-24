@@ -59,13 +59,14 @@ Montagna.prototype.generateGrid = function generateGrid () {         //Quindi se
         this.dataMatrix[i] = [];                                     //Per creare una Matrice vuota e quindi per poter usare dopo
                                                                      //il push assegno per ogni indice i un array vuoto
         const row = this.createRowElement();                         //Creo una varibile d'appoggio row al quale assegno
-        console.log(row);                                            //ciò che mi ritornerà dalla funzione createRowElement()
-                                                                     //sapendo sempre che this. è globalVariable.
+        console.log(row);                                           //ciò che mi ritornerà dalla funzione createRowElement()
+                                                                    //sapendo sempre che this. è globalVariable.
                                                                      //createRowElement mi rimanderà indietro <div class="row"></div>
 
         for(let j = 0; j < this.__SIZE_WIDTH; j++) {                 //Faccio partire un ciclo For per la colonna [j]
             const randomNum = Math.floor(Math.random()*100);         //Assegno a una variabile d'appoggio randomNum un numero random da 0 a 99
-            const block = this.createBlockElement(randomNum, i, j);  //Ora dichiaro una variabile al quale passerò <div class="block"></div>
+            const block = this.createBlockElement(randomNum);        //Ora dichiaro una variabile al quale passerò <div class="block"></div>
+            const wet = this.aggiuntaClick (block,i,j);                  //Aggiungo tramite il this. la funzione per aggiungere il wet chiamata dal click
             this.dataMatrix[i].push({
                                       height: randomNum,
                                       block: block
@@ -99,13 +100,12 @@ Montagna.prototype.createRowElement = function createRowElement () {  //Quindi a
  *
  * @return {HTMLDivElement}
  */
-Montagna.prototype.createBlockElement = function createBlockElement (numero, nRiga, nColonna) {  //Quindi dentro avrò una funzione createBlockElement
+Montagna.prototype.createBlockElement = function createBlockElement (numero) {  //Quindi dentro avrò una funzione createBlockElement
     let block = document.createElement('div');                                                   //Definisco una variabile block dove creo <div></div>
     block.innerText = numero;                                                                    //Tramite innerText inserisco il parametro numero, generato
     block.classList.add('block');                                                                //e passato precedentemente. Quindi aggiungo la classe
-    block.setAttribute('n_row', nRiga);                                                          //block => <div class="block"></div>
-    block.setAttribute('n_col', nColonna);
-    this.enhanceBlockWithCreateSource(block);                                                    //Tramite sempre this. che punta a Montagna che costruisce
+                                                                                                //block => <div class="block"></div>
+                                                                                                //Tramite sempre this. che punta a Montagna che costruisce
                                                                                                  //in questo caso globalVariable (il bottone che genera la matrice)
                                                                                                  //aggiungo una funzione per aaggiungere la classe "wet" a ogni blocco.
     return block;                                                                                //Rimando alla chiamata block => <div class="block"></div>
@@ -113,45 +113,47 @@ Montagna.prototype.createBlockElement = function createBlockElement (numero, nRi
 
 
 
-                                                  /*  METODO CHE AGGIUNGE LA CLASSE WET AL CLICK */
+                                                  /*  METODO CHE AGGIUNGE IlL CLICK */
 /**
  * 
- * @param {HTMLDivElement} elementThatWillGenerateSource
+ * @param {HTMLDivElement} block
  */
-Montagna.prototype.enhanceBlockWithCreateSource = function enhanceBlockWithCreateSource (elementThatWillGenerateSource) {  //Quindi il ciclo for che genera la matrice, per
-    elementThatWillGenerateSource.addEventListener(                                                                        //ogni blocco aggiunge "block" => <div class="block"></div>
-        'click',                                                                                                           //e richiama questa funzione passando <div class="block"></div>
-        (event) => {                                                                                                       //al quale aggiungerà l'evento onclick ("click") che chiameà una funzione
-            // this qui è uguale a <div class="block"></div> che ha fatto scattare l'evento                                //per aggiungere la classe "wet".
-            const elementoCheHaFattoScatenareQuestoEvento = event.target;           
-            // elementoCheHaFattoScatenareQuestoEvento === elementThatWillGenerateSource === true
-            elementoCheHaFattoScatenareQuestoEvento.classList.add('wet');
-            // this.classList.add('wet');
-            const n_row = elementoCheHaFattoScatenareQuestoEvento.getAttribute('n_row');
-            const n_col = elementoCheHaFattoScatenareQuestoEvento.getAttribute('n_col');
-
-            this.flowTheRiver(parseInt(n_row, 10), parseInt(n_col, 10));
-        }
-    );
+Montagna.prototype.aggiuntaClick = function aggiuntaClick (block,i,j) {                                             //Quindi il ciclo for che genera la matrice, per
+    block.addEventListener(  'click', () => {  this.aggiuntaWet(block,i,j);     });                                 //ogni blocco aggiunge "block" => <div class="block"></div>
+                                                                                                                   //e richiama questa funzione passando <div class="block"></div>
+                                                                                                                   //al quale aggiungerà l'evento onclick ("click") che chiameà una funzione
+                                                                                                                   //per aggiungere la classe "wet".
+           
 }
 
-Montagna.prototype.flowTheRiver = function flowTheRiver (x, y) {
-    if (this.dataMatrix[x] !== undefined && this.dataMatrix[x][y] !== undefined) {
-        const num = this.dataMatrix[x][y].height;
-    
-        for (let R = x-1; R < x + 2; R++) {
-            for (let C = y-1; C < y + 2; C++) {
-                // if (R === i && C === y) continue;
-                if (this.dataMatrix[R] !== undefined && this.dataMatrix[R][C] !== undefined) {
-                    if (!this.dataMatrix[R][C].alreadyChecked && this.dataMatrix[R][C].height < num) {
-                        this.dataMatrix[R][C].block.classList.add('wet');
-                        this.flowTheRiver(R, C);
+
+                                               /* METODO CHE AGGIUNGE LA CLASSE WET DEL CLICK */
+
+Montagna.prototype.aggiuntaWet = function aggiuntaWet (block,i,j) {                                     //Questa funzione richiamata dal click aggiunge la classe "wet"
+           block.classList.add('wet');                                                                  //e chiamerà la funzione flowTheRiver() per controllare a quali
+           this.flowTheRiver(i,j)                                                                       //altri blocchi si propaga la classe "wet"
+}
+
+
+
+
+                                                /*METODO CHE CONTROLLA DOVE SI PROPAGA IL FIUME */
+
+Montagna.prototype.flowTheRiver = function flowTheRiver (x, y) {                                            //Quindi definisco la funzione flowTheRiver 
+        const num = this.dataMatrix[x][y].height;                                                           //Metto su una variabile d'appoggio il valore della matrice
+        for (let R = x-1; R < x + 2; R++)                                                                   //Faccio partire il ciclo per vedere i valori intorno al 
+        {                                                                 
+            for (let C = y-1; C < y + 2; C++)                                                               //blocco selezionato
+            {
+                if (this.dataMatrix[R] !== undefined && this.dataMatrix[R][C] !== undefined)                //Quindi per prima cosa controllo se il primo blocco
+                    {                                                                                       //da confontare è vuoto se è vuoto passo al successivo blocco
+                        if (this.dataMatrix[R][C].height < num)                                             //altrimenti controllo se il valore è minore al blocco con "wet"
+                            {                                                                               //se è minore aggiungo la classe "wet"
+                            this.dataMatrix[R][C].block.classList.add('wet');                               //quindi richiamo questa stessa funzione passando gli indici
+                            this.flowTheRiver(R, C);                                                        //aggiornati al nuovo blocco con classe "wet"
+                            }
                     }
-                } else {
-                    return;
-                }
-            }
+                
+             }
         }
-    } else return;
-}
 }
